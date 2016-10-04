@@ -41,12 +41,12 @@ class ETAServiceServer < EM::Connection
 
     service = EtaService.instance
     point = service.decode_coords(@http_query_string)
-    
+
     service.eta_for_point(point) { |eta|
       response = EM::DelegatedHttpResponse.new(self)
       response.status = 200
       response.content_type "text/json"
-      response.content = Oj.dump({estimated_time: eta})
+      response.content = ({"estimated_time": eta}).to_msgpack
       response.send_response
     }
 
@@ -55,7 +55,16 @@ end
 
 EM.run{
   redis_connection = EM::Hiredis.connect("redis://127.0.0.1:6379/")
-  EtaService.instance(redis_connection).populate
+  error_callback = Proc.new { |err|
+    puts err.inspect
+    response = EM::DelegatedHttpResponse.new(self)
+    response.status = 500
+    response.content_type "text/json"
+    response.content = Oj.dump({estimated_time: eta})
+    response.send_response
+
+  }
+  EtaService.instance(redis_connection, error_callback).populate
   
   EM.start_server '0.0.0.0', 8081, ETAServiceServer
 }

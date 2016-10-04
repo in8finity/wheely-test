@@ -1,14 +1,15 @@
 require 'em-hiredis'
-
+require 'msgpack'
 class EtaService
 
 	@@instance = nil
 
-	def self.instance(redis_connection=nil, error_callback)
+	def self.instance(redis_connection=nil, error_callback=nil)
 		return @@instance if @@instance
 		throw Exception.new "You have to specify redis connection" if(!@@instance && redis_connection.nil?)
 		@@instance = self.new redis_connection	
-		@@error_callback = error_callback
+		@@error_callback = error_callback if error_callback
+		@@instance
 	end
 
 	def initialize redis_connection=nil
@@ -33,24 +34,25 @@ class EtaService
 			}
 
 		(1..5).each{ |i|
-			update_taxi_point({longitude: 12.2324+rand(10)/10000.0, latitude: 23.1131+rand(10)/10000.0}, Oj.dump({available:"true", id:"Taxi_#{i}"})) {population_track_callback.call()}
+			update_taxi_point({longitude: 12.2324+rand(10)/10000.0, latitude: 23.1131+rand(10)/10000.0}, {available:"true", id:"Taxi_#{i}"}.to_msgpack) {population_track_callback.call()}
 		}
 	end
 
 	def update_taxi_point point, taxi_info, &callback
-		puts "Adding taxt at #{point.inspect}"
-		defferable = @redis.geoadd("Taxies", point[:longitude], point[:latitude], Oj.dump(taxi_info).to_ms)
+		#puts "Adding taxt at #{point.inspect}"
+		defferable = @redis.geoadd("Taxies", point[:longitude], point[:latitude], taxi_info.to_msgpack)
 		defferable.callback {
 		 	yield 
 		}
 		defferable.errback { |e|
 		    puts e # => #<RuntimeError: ERR Operation against a key holding the wrong kind of value>
+		    @@error_callback.call(e)
 		    #puts e.redis_error
 		}
 	end
 
-	def get_cache point, &callback
-		
+	def get_cached_taxies point, &callback
+
 	end
 
 	def find_nearest_taxies point, &callback
@@ -59,12 +61,12 @@ class EtaService
 		have_cached = false
 		defferable = @redis.georadius("Taxies", point[:longitude], point[:latitude], 10000, "m", "COUNT", 3, "WITHDIST")
 		defferable.callback {|result| 
-			puts "Nearest Taxies found"
+			#puts "Nearest Taxies found"
 			yield result if !have_cached
 		}
 		defferable.errback { |e|
 		    puts e # => #<RuntimeError: ERR Operation against a key holding the wrong kind of value>
-		    #puts e.redis_error
+		    @@error_callback.call(e)
 		}
 	end
 
@@ -75,8 +77,8 @@ class EtaService
 
 	def nearest_cars_with_distance point, &callback
 		find_nearest_taxies( point) {|result| 
-			puts "Found nearest taxies"
-			puts result.inspect
+			#puts "Found nearest taxies"
+			#puts result.inspect
 			yield result
 		}
 		
@@ -96,8 +98,8 @@ class EtaService
 
 	def average_distance point, &callback
 		nearest_cars_with_distance(point) {|cars|
-			puts cars.inspect 
-			puts cars[0][1].to_f
+			#puts cars.inspect 
+			#puts cars[0][1].to_f
 			result = cars.reduce(0.0){|a,c| a += c[1].to_f}/cars.count
 			yield result
 		}
