@@ -1,11 +1,6 @@
 source 'https://rubygems.org'
 
-gem "rspec"
-gem "sequel"
-gem "redis"
-gem 'oj', :require=>"oj"
 gem 'eventmachine_httpserver', :require => 'evma_httpserver'
 gem 'eventmachine', :require=>"eventmachine"
 gem 'em-http-request'
-gem 'em-hiredis'
-gem 'msgpack'
+gem 'oj', :require=>"oj"

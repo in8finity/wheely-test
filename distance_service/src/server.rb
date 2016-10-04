@@ -1,15 +1,22 @@
 require 'eventmachine'
 require 'evma_httpserver'
 require 'em-http'
+require 'em-hiredis'
 require 'oj'
+require 'msgpack'
+require File.dirname(__FILE__)+'/eta_service'
 
-class NearestCarsServiceServer < EM::Connection
+class ETAServiceServer < EM::Connection
   include EM::HttpServer
 
    def post_init
      super
      no_environment_strings
    end
+
+  def decode_coords http_query_string
+
+  end
 
   def process_http_request
     # the http request details are available via the following instance variables:
@@ -30,16 +37,25 @@ class NearestCarsServiceServer < EM::Connection
     #TODO: query for cars if no cache or high chances that cache data is obsolete
     #TODO: update data in cache
     #TODO: return found data as response (in bson or pmesg)
+    #TODO: handle timeouts
 
-    response = EM::DelegatedHttpResponse.new(self)
-    response.status = 200
-    response.content_type "text/json"
-    response.content = Oj.dump({test: "it"})
-    response.send_response
+    service = EtaService.instance
+    point = service.decode_coords(@http_query_string)
+    
+    service.eta_for_point(point) { |eta|
+      response = EM::DelegatedHttpResponse.new(self)
+      response.status = 200
+      response.content_type "text/json"
+      response.content = Oj.dump({estimated_time: eta})
+      response.send_response
+    }
 
     end
 end
 
 EM.run{
-  EM.start_server '0.0.0.0', 8081, NearestCarsServiceServer
+  redis_connection = EM::Hiredis.connect("redis://127.0.0.1:6379/")
+  EtaService.instance(redis_connection).populate
+  
+  EM.start_server '0.0.0.0', 8081, ETAServiceServer
 }

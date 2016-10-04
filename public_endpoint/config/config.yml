@@ -1,0 +1,3 @@
+---
+  distance_service_route: "distance_service/api/v1/"
+  endpoint_route: "location/:coordinates/cars/"
