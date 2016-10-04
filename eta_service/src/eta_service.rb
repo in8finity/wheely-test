@@ -39,13 +39,14 @@ class EtaService
 			}
 
 		(1..5).each{ |i|
-			update_taxi_point({longitude: 12.2324+rand(10)/10000.0, latitude: 23.1131+rand(10)/10000.0}, {available:"true", id:"Taxi_#{i}"}.to_msgpack) {population_track_callback.call()}
+			update_taxi_point({longitude: 12.2324+rand(10)/10000.0, latitude: 23.1131+rand(10)/10000.0}, {available:true, id:"Taxi_#{i}"}.to_msgpack) {population_track_callback.call()}
 		}
 	end
 
 	def update_taxi_point point, taxi_info, &callback
 		#puts "Adding taxt at #{point.inspect}"
-		defferable = @redis.geoadd("Taxies", point[:longitude], point[:latitude], taxi_info.to_msgpack)
+		#if updating taxi it could be added to available list or removed from it (so we are not handling complex filtering of taxies)
+		defferable = @redis.geoadd("AvailableTaxi", point[:longitude], point[:latitude], taxi_info.to_msgpack)
 		defferable.callback {
 		 	yield 
 		}
@@ -76,7 +77,7 @@ class EtaService
 	end
 
 	def find_nearest_taxies point, distance, &callback
-		defferable = @redis.georadius("Taxies", point[:longitude], point[:latitude], distance, "m", "COUNT", 3, "WITHDIST")
+		defferable = @redis.georadius("AvailableTaxi", point[:longitude], point[:latitude], distance, "m", "COUNT", 3, "WITHDIST")
 		defferable.callback {|result| 
 			#nearest taxi found
 			yield result
@@ -110,9 +111,5 @@ class EtaService
 			result = cars.reduce(0.0){|acc,car| acc += car[1].to_f}/cars.count
 			yield result
 		}
-	end
-
-	def decode_coords request
-		{longitude: 12.2324, latitude: 23.1131}
 	end
 end

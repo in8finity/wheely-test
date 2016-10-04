@@ -14,8 +14,17 @@ class ETAServiceServer < EM::Connection
      no_environment_strings
    end
 
-  def decode_coords http_query_string
+  def decode_coords query_str 
+    throw Exception.new("Failed to parse paramteres ") if(query_str.nil?)
 
+    params = query_str.split("&")
+    parsed_params = {}
+    params = params.each{|param|
+       param_parts = param.split "="
+       parsed_params[param_parts[0].to_sym] = param_parts[1]
+     } if params.count > 0
+  
+    {latitude: parsed_params[:lat].to_f, longitude:parsed_params[:long].to_f}
   end
 
   def process_http_request
@@ -40,16 +49,26 @@ class ETAServiceServer < EM::Connection
     #TODO: handle timeouts
 
     service = EtaService.instance
-    point = service.decode_coords(@http_query_string)
-
-    service.eta_for_point(point) { |eta|
+    begin
+      point = decode_coords(@http_query_string)
+      puts "Point:"+point.inspect
+      service.eta_for_point(point) { |eta|
       puts "Final eta = #{eta}"
       response = EM::DelegatedHttpResponse.new(self)
       response.status = 200
-      response.content_type "text/json"
+      response.content_type "text/msgpack"
       response.content = ({"estimated_time": eta}).to_msgpack
       response.send_response
     }
+
+    rescue Exception=>e
+      response = EM::DelegatedHttpResponse.new(self)
+      response.status = 500
+      response.content_type "text/msgpack"
+      response.content = Oj.dump({error: e.message}).to_msgpack
+      response.send_response
+    end
+    
 
     end
 end
@@ -60,8 +79,8 @@ EM.run{
     puts err.inspect
     response = EM::DelegatedHttpResponse.new(self)
     response.status = 500
-    response.content_type "text/json"
-    response.content = Oj.dump({estimated_time: eta})
+    response.content_type "text/msgpack"
+    response.content = ({error: err.message}).to_msgpack
     response.send_response
 
   }
