@@ -1,0 +1,57 @@
+[in8finity@localhost distance_service]$ ab -c 10 -n 10000  http://127.0.0.1:8081/
+This is ApacheBench, Version 2.3 <$Revision: 1430300 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 127.0.0.1 (be patient)
+Completed 1000 requests
+Completed 2000 requests
+Completed 3000 requests
+Completed 4000 requests
+Completed 5000 requests
+Completed 6000 requests
+Completed 7000 requests
+Completed 8000 requests
+Completed 9000 requests
+Completed 10000 requests
+Finished 10000 requests
+
+
+Server Software:        
+Server Hostname:        127.0.0.1
+Server Port:            8081
+
+Document Path:          /
+Document Length:        25 bytes
+
+Concurrency Level:      10
+Time taken for tests:   5.635 seconds
+Complete requests:      10000
+Failed requests:        9999
+   (Connect: 0, Receive: 0, Length: 9999, Exceptions: 0)
+Write errors:           0
+Total transferred:      909999 bytes
+HTML transferred:       259999 bytes
+Requests per second:    1774.68 [#/sec] (mean)
+Time per request:       5.635 [ms] (mean)
+Time per request:       0.563 [ms] (mean, across all concurrent requests)
+Transfer rate:          157.71 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.3      0       9
+Processing:     1    6   2.7      5      29
+Waiting:        0    5   2.5      4      27
+Total:          3    6   2.7      5      30
+
+Percentage of the requests served within a certain time (ms)
+  50%      5
+  66%      5
+  75%      6
+  80%      6
+  90%      8
+  95%     11
+  98%     15
+  99%     19
+ 100%     30 (longest request)
+[in8finity@localhost distance_service]$ 

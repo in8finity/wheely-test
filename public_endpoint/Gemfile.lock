@@ -14,6 +14,7 @@ GEM
     eventmachine (1.2.0.1)
     eventmachine_httpserver (0.2.1)
     http_parser.rb (0.6.0)
+    msgpack (1.0.0)
     oj (2.17.4)
 
 PLATFORMS
@@ -23,6 +24,7 @@ DEPENDENCIES
   em-http-request
   eventmachine
   eventmachine_httpserver
+  msgpack
   oj
 
 BUNDLED WITH

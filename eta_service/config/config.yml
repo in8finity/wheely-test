@@ -1,3 +1,3 @@
 ---
   service_route: "distance_service/api/v1/"
-  redis_url: "redis:/:"
+  redis_url: "redis://127.0.0.1:6379/"
