@@ -9,3 +9,4 @@ gem 'eventmachine', :require=>"eventmachine"
 gem 'em-http-request'
 gem 'em-hiredis'
 gem 'msgpack'
+gem 'c_geohash'

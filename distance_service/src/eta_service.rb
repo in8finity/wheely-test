@@ -1,5 +1,7 @@
 require 'em-hiredis'
 require 'msgpack'
+ require 'geohash'
+
 class EtaService
 
 	@@instance = nil
@@ -51,13 +53,27 @@ class EtaService
 		}
 	end
 
-	def get_cached_taxies point, &callback
+	def set_cached_eta point, eta
+		geocahe_value = GeoHash.encode(point[:longitude], point[:latitude], precision = 4) #prec=4  is 111.111/10^5 = 100 meters (for 60 km/h = 1km/min its enough)
+		defferable = @redis.set(geocahe_value, eta)
+		defferable.callback { |result|
+			@redis.expire(geocahe_value, 6) #6 seconds ~ 100 meters for car moving on full speed in the city (60 km/h)
+		}
+		defferable.errback { |e|
+		    #puts e # => #<RuntimeError: ERR Operation against a key holding the wrong kind of value>
+		    @@error_callback.call(e)
+		}
+	end
 
+	def get_cached_eta point, &callback
+		geocahe_value = GeoHash.encode(point[:longitude], point[:latitude], precision=4) #4 decimals is 111.111/10^5 = 100 meters (for 60 km/h = 1km/min its enough)
+		defferable = @redis.get(geocahe_value)
+		defferable.callback { |result|
+			yield result
+		}
 	end
 
 	def find_nearest_taxies point, &callback
-		
-		#TODO: find in cache cache TTL is very short - around 0.25 min its equal to 0.25 km of the car momevement in city with maximum allowed speed
 		have_cached = false
 		defferable = @redis.georadius("Taxies", point[:longitude], point[:latitude], 10000, "m", "COUNT", 3, "WITHDIST")
 		defferable.callback {|result| 
@@ -92,8 +108,20 @@ class EtaService
 	end
 
 	def eta_for_point point, &callback
+		get_cached_eta(point){|result| 
+			puts "Cached val: #{result.inspect}"
+			if(result.nil?)
+				average_distance(point){|distance| 
+					eta = distance*1.5/1000.0
+					set_cached_eta(point, eta)
+					yield eta
+				}
+			else
+				yield result
+			end
+		} 
 		#point {:longitude: 12.2324, :latitude: 23.1131}
-		 average_distance(point){|distance| yield distance*1.5}
+		#average_distance(point){|distance| yield distance*1.5}
 	end
 
 	def average_distance point, &callback
