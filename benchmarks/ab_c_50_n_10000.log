@@ -1,0 +1,113 @@
+ab -c 50 -n 10000  "http://127.0.0.1:8080/?long=12.234&lat=23.1131"
+This is ApacheBench, Version 2.3 <$Revision: 1430300 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 127.0.0.1 (be patient)
+Completed 1000 requests
+Completed 2000 requests
+Completed 3000 requests
+Completed 4000 requests
+Completed 5000 requests
+Completed 6000 requests
+Completed 7000 requests
+Completed 8000 requests
+Completed 9000 requests
+Completed 10000 requests
+Finished 10000 requests
+
+
+Server Software:        
+Server Hostname:        127.0.0.1
+Server Port:            8080
+
+Document Path:          /?long=12.234&lat=23.1131
+Document Length:        28 bytes
+
+Concurrency Level:      50
+Time taken for tests:   14.272 seconds
+Complete requests:      10000
+Failed requests:        9997
+   (Connect: 0, Receive: 0, Length: 9997, Exceptions: 0)
+Write errors:           0
+Total transferred:      1119964 bytes
+HTML transferred:       399964 bytes
+Requests per second:    700.68 [#/sec] (mean)
+Time per request:       71.359 [ms] (mean)
+Time per request:       1.427 [ms] (mean, across all concurrent requests)
+Transfer rate:          76.63 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   1.0      0      19
+Processing:     5   71  18.7     65     195
+Waiting:        0   61  16.4     57     171
+Total:         14   71  18.7     66     195
+
+Percentage of the requests served within a certain time (ms)
+  50%     66
+  66%     68
+  75%     71
+  80%     73
+  90%     80
+  95%    104
+  98%    156
+  99%    173
+ 100%    195 (longest request)
+
+ ab -c 50 -n 10000  "http://127.0.0.1:8081/?long=12.234&lat=23.1131"
+This is ApacheBench, Version 2.3 <$Revision: 1430300 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 127.0.0.1 (be patient)
+Completed 1000 requests
+Completed 2000 requests
+Completed 3000 requests
+Completed 4000 requests
+Completed 5000 requests
+Completed 6000 requests
+Completed 7000 requests
+Completed 8000 requests
+Completed 9000 requests
+Completed 10000 requests
+Finished 10000 requests
+
+
+Server Software:        
+Server Hostname:        127.0.0.1
+Server Port:            8081
+
+Document Path:          /?long=12.234&lat=23.1131
+Document Length:        25 bytes
+
+Concurrency Level:      50
+Time taken for tests:   4.217 seconds
+Complete requests:      10000
+Failed requests:        9999
+   (Connect: 0, Receive: 0, Length: 9999, Exceptions: 0)
+Write errors:           0
+Total transferred:      1039989 bytes
+HTML transferred:       359989 bytes
+Requests per second:    2371.16 [#/sec] (mean)
+Time per request:       21.087 [ms] (mean)
+Time per request:       0.422 [ms] (mean, across all concurrent requests)
+Transfer rate:          240.82 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   1.5      0      29
+Processing:     7   21   8.7     18      68
+Waiting:        0   17   7.9     15      66
+Total:          9   21   8.7     18      68
+
+Percentage of the requests served within a certain time (ms)
+  50%     18
+  66%     19
+  75%     23
+  80%     26
+  90%     33
+  95%     38
+  98%     48
+  99%     55
+ 100%     68 (longest request
