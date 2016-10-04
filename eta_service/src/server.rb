@@ -51,9 +51,7 @@ class ETAServiceServer < EM::Connection
     service = EtaService.instance
     begin
       point = decode_coords(@http_query_string)
-      puts "Point:"+point.inspect
       service.eta_for_point(point) { |eta|
-      puts "Final eta = #{eta}"
       response = EM::DelegatedHttpResponse.new(self)
       response.status = 200
       response.content_type "text/msgpack"
